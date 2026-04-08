@@ -1,0 +1,51 @@
+services:
+# Flask API Web Service
+- type: web
+  name: xmrt-flask-api
+  env: python
+  plan: starter
+  buildCommand: pip install -r backend/xmrt-dao-backend/requirements.txt
+  startCommand: cd backend/xmrt-dao-backend && python src/main.py
+  envVars:
+  - key: PORT
+    value: '10000'
+  - key: OPENROUTER_API_KEY
+    sync: false
+  - key: SECRET_KEY
+    generateValue: true
+  - key: GITHUB_TOKEN
+    sync: false
+  autoDeploy: true
+  branch: main
+
+# Eliza Autonomous Agent Web Service (24/7 Mode)
+- type: web
+  name: eliza-autonomous-agent
+  env: python
+  plan: starter
+  buildCommand: pip install -r requirements.txt
+  startCommand: gunicorn app.main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+  healthCheckPath: /api/health
+  envVars:
+  - key: PORT
+    value: '10001'
+  - key: GITHUB_TOKEN
+    sync: false
+  - key: GITHUB_USER
+    value: DevGruGold
+  - key: TARGET_REPO
+    value: xmrtnet
+  - key: ECOSYSTEM_REPO
+    value: XMRT-Ecosystem
+  - key: ELIZA_MODE
+    value: continuous_24_7
+  - key: CYCLE_INTERVAL
+    value: '3600'
+  - key: MAX_CYCLES
+    value: '0'
+  - key: GEMINI_API_KEY
+    sync: false
+  - key: MCP_ENABLED
+    value: 'true'
+  autoDeploy: true
+  branch: main

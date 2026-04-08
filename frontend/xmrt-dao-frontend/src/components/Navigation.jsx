@@ -4,6 +4,7 @@ const Navigation = ({ currentPage, setCurrentPage }) => {
   const navItems = [
     { id: 'home', label: 'Home', icon: '🏠' },
     { id: 'activity', label: 'Activity', icon: '📊' },
+    { id: 'eliza', label: 'Active Agents', icon: '🤖' },
     { id: 'banking', label: 'Banking', icon: '🏦' },
     { id: 'terminal', label: 'Terminal', icon: '💳' },
     { id: 'assets', label: 'Assets', icon: '💎' },
