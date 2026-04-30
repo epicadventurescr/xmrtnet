@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import config from '../config';
 
 const AuthContext = createContext();
 
@@ -19,70 +20,76 @@ export const AuthProvider = ({ children }) => {
     // Check for existing session
     const savedUser = localStorage.getItem('xmrt_user');
     const savedAuth = localStorage.getItem('xmrt_auth');
-    
+
     if (savedUser && savedAuth === 'true') {
       setUser(JSON.parse(savedUser));
       setIsAuthenticated(true);
     }
-    
+
     setLoading(false);
   }, []);
 
   const login = async (email, password) => {
     try {
-      // Simulate API call - replace with actual API
-      const response = await simulateLogin(email, password);
-      
-      if (response.success) {
-        const userData = {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
-          balance: response.user.balance
-        };
-        
+      const response = await fetch(`${config.API_URL}/api/users/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        const userData = data.user;
+
         setUser(userData);
         setIsAuthenticated(true);
-        
+
         // Save to localStorage
         localStorage.setItem('xmrt_user', JSON.stringify(userData));
         localStorage.setItem('xmrt_auth', 'true');
-        
+
         return { success: true };
       } else {
-        return { success: false, error: response.error };
+        return { success: false, error: data.error || 'Login failed' };
       }
     } catch (error) {
-      return { success: false, error: 'Login failed. Please try again.' };
+      console.error('Login error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
     }
   };
 
   const register = async (email, password, name) => {
     try {
-      // Simulate API call - replace with actual API
-      const response = await simulateRegister(email, password, name);
-      
-      if (response.success) {
-        const userData = {
-          id: response.user.id,
-          email: response.user.email,
-          name: response.user.name,
-          balance: response.user.balance
-        };
-        
+      const response = await fetch(`${config.API_URL}/api/users/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, username: name }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const userData = data;
+
         setUser(userData);
         setIsAuthenticated(true);
-        
+
         // Save to localStorage
         localStorage.setItem('xmrt_user', JSON.stringify(userData));
         localStorage.setItem('xmrt_auth', 'true');
-        
+
         return { success: true };
       } else {
-        return { success: false, error: response.error };
+        return { success: false, error: data.error || 'Registration failed' };
       }
     } catch (error) {
-      return { success: false, error: 'Registration failed. Please try again.' };
+      console.error('Registration error:', error);
+      return { success: false, error: 'Network error. Please try again.' };
     }
   };
 
@@ -119,15 +126,15 @@ export const AuthProvider = ({ children }) => {
 const simulateLogin = async (email, password) => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
   // Demo accounts
   const demoAccounts = [
     { email: 'user1@example.com', password: 'password1', name: 'John Doe', balance: 1250.75 },
     { email: 'user2@example.com', password: 'password2', name: 'Jane Smith', balance: 2500.00 }
   ];
-  
+
   const account = demoAccounts.find(acc => acc.email === email && acc.password === password);
-  
+
   if (account) {
     return {
       success: true,
@@ -149,7 +156,7 @@ const simulateLogin = async (email, password) => {
 const simulateRegister = async (email, password, name) => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
   // Simulate successful registration
   return {
     success: true,
